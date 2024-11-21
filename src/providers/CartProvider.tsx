@@ -6,6 +6,7 @@ type CartType = {
     items: CartItem[];
     addItem: (product: Product, size: CartItem['size']) => void;
     updateQuantity: (itemId: string, amount: -1 | 1) => void;
+    total: number;
 };
 
 
@@ -13,20 +14,21 @@ const CartContext = createContext<CartType>({
     items: [],
     addItem: () => {},
     updateQuantity: () => {},
+    total: 0,
 });
 
 const CartProvider = ({children}: PropsWithChildren) => {
     const [items, setItems] = useState<CartItem[]>([]);
 
     const addItem = (product: Product, size: CartItem['size']) => {
-    // todo: if already in cart, increase quantity
-    const existingItem = items.find(
-        item => item.product === product && item.size === size);
+    
+        const existingItem = items.find(
+            item => item.product === product && item.size === size);
 
-    if (existingItem) {
-        updateQuantity(existingItem.id, 1);
-        return;
-    }
+        if (existingItem) {
+            updateQuantity(existingItem.id, 1);
+            return;
+        }
 
         const newCartItem: CartItem = {
             id: randomUUID(),
@@ -35,6 +37,7 @@ const CartProvider = ({children}: PropsWithChildren) => {
             size,
             quantity: 1,
         };
+
         setItems([newCartItem, ...items]);
     };
 
@@ -53,11 +56,11 @@ const CartProvider = ({children}: PropsWithChildren) => {
         setItems(updatedItems);
     };
 
-    console.log(items);
+    const total = items.reduce((sum, item) => (sum += item.product.price * item.quantity), 0);
 
     return (
         <CartContext.Provider 
-        value={{ items: items, addItem: addItem, updateQuantity: updateQuantity }}>
+        value={{ items: items, addItem: addItem, updateQuantity: updateQuantity, total: total }}>
             {children}
         </CartContext.Provider>
     )
