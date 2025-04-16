@@ -4,7 +4,7 @@ import { Product } from "@/types";
 import { Link, useSegments } from "expo-router";
 
 export const defaultPizzaImage =
-  "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food-delivery/default.png";
+  "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/food/peperoni.png";
 
 type ProductListItemProps = {
   product: Product;
