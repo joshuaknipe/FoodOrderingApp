@@ -4,7 +4,8 @@ import Button from "@/components/Button";
 import { defaultPizzaImage } from "@/components/ProductListItem";
 import Colors from "@/constants/Colors";
 import * as ImagePicker from "expo-image-picker";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useInsertProduct } from "@/api/products";
 
 const CreateProductScreen = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -14,6 +15,10 @@ const CreateProductScreen = () => {
 
   const { id } = useLocalSearchParams();
   const isUpdating = !!id;
+
+  const { mutate: insertProduct } = useInsertProduct();
+
+  const router = useRouter();
 
   const resetFields = () => {
     setName("");
@@ -43,7 +48,7 @@ const CreateProductScreen = () => {
     } else {
       onCreate();
     }
-  }
+  };
 
   const onUpdate = () => {
     if (!validateInput()) {
@@ -65,8 +70,15 @@ const CreateProductScreen = () => {
     console.warn("Creating product", name, price);
 
     // save in the database
-
-    resetFields();
+    insertProduct(
+      { name, price: parseFloat(price), image },
+      {
+        onSuccess: () => {
+          resetFields();
+          router.back();
+        },
+      }
+    );
   };
 
   const pickImage = async () => {
@@ -90,16 +102,25 @@ const CreateProductScreen = () => {
   };
 
   const confirmDelete = () => {
-    Alert.alert("Delete Product", "Are you sure you want to delete this product?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: onDelete },
-    ]);
+    Alert.alert(
+      "Delete Product",
+      "Are you sure you want to delete this product?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: onDelete },
+      ]
+    );
   };
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: isUpdating ? "Update Product" : "Create Product" }} />
-      <Image source={{ uri: image || defaultPizzaImage }} style={styles.image} />
+      <Stack.Screen
+        options={{ title: isUpdating ? "Update Product" : "Create Product" }}
+      />
+      <Image
+        source={{ uri: image || defaultPizzaImage }}
+        style={styles.image}
+      />
       <Text onPress={pickImage} style={styles.textButton}>
         Select Image
       </Text>
@@ -129,7 +150,6 @@ const CreateProductScreen = () => {
           Delete
         </Text>
       )}
-
     </View>
   );
 };
